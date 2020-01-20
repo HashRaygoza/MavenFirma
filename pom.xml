@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>mx.com.pydee</groupId>
+    <artifactId>MavenFirma</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
+    
+    <build>        
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>mx.com.pydee.mavenfirma.Prueba</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+                     
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.3.2</version>
+                <executions>
+                    <execution>
+                        <id>dataCert</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>cmd.exe</executable>
+                            <arguments>
+                                <argument>/C</argument>
+                                <argument>keytool -list -v -keystore myKeystore.jks -alias myself  -storepass 123456789 > dataCert.txt </argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    
+                    <execution>
+                        <id>add-dataCert</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>                        
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>jar</executable>
+                            <arguments>
+                                <argument>uf</argument>
+                                <argument>${project.build.directory}/MavenFirma-1.0-jar-with-dependencies.jar</argument>
+                                <argument>dataCert.txt</argument>
+                            </arguments>
+                        </configuration>
+                        
+                    </execution>
+                </executions>
+                
+            </plugin>
+            
+            
+            <plugin>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <id>sign</id>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archive>${project.build.directory}\MavenFirma-1.0-jar-with-dependencies.jar</archive>
+                    <keystore>${project.basedir}\myKeystore.jks</keystore>
+                    <alias>myself</alias>
+                    <storepass>123456789</storepass>
+                    <keypass>123456789</keypass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>
